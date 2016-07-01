@@ -1,4 +1,4 @@
 module.exports = {
-	db: 'mongodb://mongoDBHostName/expenses',
+	db: 'mongodb://localhost/expenses',
 	secret: '***SECRET***'
 };
