@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Expense Tracker</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta charset="utf-8">
+		<link rel="icon" href="/images/favicon.ico" />
+		<link rel="shortcut icon" href="/images/favicon.ico" />
+		<link rel="stylesheet" href="/css/style.css" />
+		<link rel="stylesheet" href="/css/bootstrap.min.css" />
+		<script src="/javascripts/jquery-1.12.3.min.js"></script>
+		<script src="/javascripts/bootstrap.min.js"></script>
+		<script src="/javascripts/angular.min.js"></script>
+		<script src="/javascripts/angular-ui-router.js"></script>
+		<script src="/javascripts/ui-bootstrap-tpls-0.14.3.min.js"></script>
+		<script src="/javascripts/angularApp.js"></script>
+		<script src="/javascripts/services.js"></script>
+		<script src="/javascripts/controllers.js"></script>
+		<script src="/javascripts/dirPagination.js"></script>
+ 	</head>
+	<body ng-app="expenseTracker" ng-controller="MainCtrl">
+		<nav class="navbar navbar-default" ng-controller="NavCtrl">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="#">Expense Tracker</a>
+				</div>
+				<div class="collapse navbar-collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<li ng-show="isLoggedIn()"><a href="/#/expenses">Expenses</a></li>
+						<li ng-show="isLoggedIn()"><a href="/#/mileages">Mileage</a></li>
+						<li ng-show="isLoggedIn()"><a href="/#/trips">Trips</a></li>
+						<li class="dropdown" ng-show="isLoggedIn()">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Administration<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="/#/vehicles">Vehicles</a></li>
+								<li><a href="/#/payment-methods">Payment Methods</a></li>
+								<li><a href="/#/trip-categories">Trip Categories</a></li>
+								<li><a href="/#/expense-categories">Expense Categories</a></li>
+								<li><a href="/#/currencies">Currencies</a></li>
+							</ul>
+						</li>
+						<li ng-show="isLoggedIn()"><a>{{ currentUser() }}</a></li>
+						<li ng-show="isLoggedIn()"><a href="" ng-click="logOut()">Log Out</a></li>
+						<li ng-hide="isLoggedIn()"><a href="/#/login">Log In</a></li>
+					<!--	<li ng-hide="isLoggedIn()"><a href="/#/register">Register</a></li> -->
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 col-md-offset-2">
+					<ui-view></ui-view>
+				</div>
+			</div>
+		</div>
+
+
+
+<script type="text/ng-template" id="/login.html">
+<div ng-show="error" class="alert alert-danger row">
+	<span>{{ error.message }}</span>
+</div>
+
+<form ng-submit="logIn()" style="margin-top:30px;">
+	<h3>Log In</h3>
+
+	<div class="form-group">
+		<label for="username">User Name</label>
+		<input type="text" class="form-control" placeholder="Username" ng-model="user.username" id="username"></input>
+	</div>
+	<div class="form-group">
+		<label for="password">Password</label>
+		<input type="password" class="form-control" placeholder="Password" ng-model="user.password" id="password"></input>
+	</div>
+	<button type="submit" class="btn btn-primary">Log In</button>
+</form>
+</script>
+
+
+<script type="text/ng-template" id="/register.html">
+	<div ng-show="error" class="alert alert-danger row">
+		<span>{{ error.message }}</span>
+	</div>
+
+	<form ng-submit="register()" style="margin-top:30px;">
+		<h3>Register</h3>
+
+		<div class="form-group">
+			<input type="text" class="form-control" placeholder="Username" ng-model="user.username"></input>
+		</div>
+		<div class="form-group">
+			<input type="password" class="form-control" placeholder="Password" ng-model="user.password"></input>
+		</div>
+		<button type="submit" class="btn btn-primary">Register</button>
+	</form>
+</script>
+
+
+<script type="text/ng-template" id="/currencies.html">
+<table class="table table-striped table-hover table-condensed">
+	<thead>
+		<caption><h3>Currencies</h3></caption>
+		<tr><th>Abbreviation</th><th>Symbol</th><th>Description</th><th>USD Exchange Rate</th><th>Delete</th></tr>
+	</thead>
+	<tbody>
+		<tr ng-repeat="currency in currencies | orderBy : 'abbreviation'">
+			<td><a href="#/currencies/{{ currency._id }}">{{ currency.abbreviation }}</a></td>
+			<td>{{ currency.symbol }}</td>
+			<td>{{ currency.description }}</td>
+			<td>{{ currency.usdExchangeRate }}</td>
+			<td><button ng-click="deleteCurrency( currency._id )">✘</button></td>
+		</tr>
+	</tbody>
+</table>
+
+<div ng-show="error" class="alert alert-danger row">
+	<span>{{ error.message }}</span>
+</div>
+
+<form ng-submit="addCurrency()" ng-show="isLoggedIn() && !isEditing" style="margin-top:30px;" autocomplete="on">
+	<h4>Add a new currency</h4>
+
+	<div class="form-group">
+		<label for="abbreviation">Abbreviation</label>
+		<input type="text" class="form-control" maxlength="3" ng-model="abbreviation" id="abbreviation" ng-minlength="3" ng-maxlength="3" ng-required="true"></input>
+	</div>
+	<div class="form-group">
+		<label for="symbol">Symbol</label>
+		<input type="text" class="form-control" maxlength="3" ng-model="symbol" id="symbol" ng-minlength="1" ng-maxlength="3" ng-required="true"></input>
+	</div>
+	<div class="form-group">
+		<label for="description">Description</label>
+		<input type="text" class="form-control" ng-model="description" id="description" ng-required="true"></input>
+	</div>
+	<div class="form-group">
+		<label for="usdExchangeRate">USD Exchange Rate</label>
+		<input type="number" class="form-control" ng-model="usdExchangeRate" id="usdExchangeRate" ng-pattern="/^[0-9]+(\.[0-9]+)?$/" step="any" ng-required="true"></input>
+	</div>
+	<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Add</button>
+</form>
+
+<form ng-submit="updateCurrency()" ng-show="isLoggedIn() && isEditing" style="margin-top:30px;" autocomplete="on">
+	<h4>Update the currency</h4>
+
+	<input type="hidden" ng-model="currency._id" />
+	<div class="form-group">
+		<label for="abbreviation">Abbreviation</label>
+		<input type="text" class="form-control" maxlength="3" ng-model="currency.abbreviation" id="abbreviation" ng-minlength="3" ng-maxlength="3" ng-required="true"></input>
+	</div>
+        <div class="form-group">
+                <label for="symbol">Symbol</label>
+                <input type="text" class="form-control" maxlength="3" ng-model="currency.symbol" id="symbol" ng-minlength="1" ng-maxlength="3" ng-required="true"></input>
+        </div>
+	<div class="form-group">
+		<label for="description">Description</label>
+		<input type="text" class="form-control" ng-model="currency.description" id="description" ng-required="true"></input>
+	</div>
+	<div class="form-group">
+		<label for="usdExchangeRate">USD Exchange Rate</label>
+		<input type="number" class="form-control" ng-model="currency.usdExchangeRate" id="usdExchangeRate" ng-pattern="/^[0-9]+(\.[0-9]+)?$/" step="any" ng-required="true"></input>
+	</div>
+	<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Update</button>
+</form>
+</script>
+
+
+<script type="text/ng-template" id="/expense-categories.html">
+<table class="table table-striped table-hover table-condensed">
+	<thead>
+		<caption><h3>Expense Categories</h3></caption>
+		<tr><th>Description</th><th>Delete</th></tr>
+	</thead>
+	<tbody>
+		<tr ng-repeat="expenseCategory in expenseCategories | orderBy : 'description'">
+			<td><a href="#/expense-categories/{{ expenseCategory._id }}">{{ expenseCategory.description }}</a></td>
+			<td><button ng-click="deleteExpenseCategory( expenseCategory._id )">✘</button></td>
+		</tr>
+	</tbody>
+</table>
+
+<div ng-show="error" class="alert alert-danger row">
+	<span>{{ error.message }}</span>
+</div>
+
+<form ng-submit="addExpenseCategory()" ng-show="isLoggedIn() && !isEditing" style="margin-top:30px;" autocomplete="on">
+	<h4>Add a new expense category</h4>
+
+	<div class="form-group">
+		<label for="description">Description</label>
+		<input type="text" class="form-control" ng-model="description" id="description" ng-required="true"></input>
+	</div>
+	<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Add</button>
+</form>
+
+<form ng-submit="updateExpenseCategory()" ng-show="isLoggedIn() && isEditing" style="margin-top:30px;" autocomplete="on">
+	<h4>Update expense category</h4>
+
+	<input type="hidden" ng-model="expenseCategory._id" />
+	<div class="form-group">
+		<label for="description">Description</label>
+		<input type="text" class="form-control" ng-model="expenseCategory.description" id="description" ng-required="true"></input>
+	</div>
+	<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Update</button>
+</form>
+</script>
+
+
+<script type="text/ng-template" id="/home.html">
+	<div>
+		<h3>Welcome!</h3>
+		<div ng-hide="isLoggedIn()">
+			<h3>You need to <a href="/#/login">Log In</a> or <a href="/#/register">Register</a> before you can use this site.</h3>
+		</div>
+	</div>
+</script>
+
+
+<script type="text/ng-template" id="/mileage.html">
+	<div ng-show="error" class="alert alert-danger row">
+		<span>{{ error.message }}</span>
+	</div>
+
+	<form ng-submit="addMileage()" ng-show="isLoggedIn() && !isEditing" style="margin-top:30px;" autocomplete="on">
+		<h4>Add a new mileage</h4>
+
+		<div class="form-group">
+			<label for="trip">Trip</label>
+			<select class="form-control" ng-model="trip" id="trip" ng-options="t.description for t in allTrips track by t._id"></select>
+		</div>
+		<div class="form-group">
+			<label for="startMileage">Start Mileage</label>
+			<input class="form-control" type="number" ng-model="startMileage" id="startMileage" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="endMileage">End Mileage</label>
+			<input class="form-control" type="number" ng-model="endMileage" id="endMileage">
+		</div>
+		<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Add</button>
+	</form>
+
+	<form ng-submit="updateMileage()" ng-show="isLoggedIn() && isEditing" style="margin-top:30px;" autocomplete="on">
+		<h4>Update the mileage</h4>
+
+		<input type="hidden" ng-model="mileage._id" />
+		<div class="form-group">
+			<label for="trip">Trip</label>
+			<select class="form-control" ng-model="mileage.trip" id="trip" ng-options="t.description for t in allTrips track by t._id"></select>
+		</div>
+		<div class="form-group">
+			<label for="startMileage">Start Mileage</label>
+			<input class="form-control" type="number" ng-model="mileage.startMileage" id="startMileage" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="endMileage">End Mileage</label>
+			<input class="form-control" type="number" ng-model="mileage.endMileage" id="endMileage">
+		</div>
+
+		<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Update</button>
+	</form>
+</script>
+
+
+<script type="text/ng-template" id="/mileages.html">
+	<button class="btn btn-primary" ng-click="goToAdd()">Add Mileage</button>
+
+	<table class="table table-striped table-hover table-condensed">
+		<thead>
+			<caption><h3>Mileages</h3></caption>
+			<tr><th>Trip</th><th>Start Mileage</th><th>End Mileage</th><th>Delete</th></tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="mileage in mileages | orderBy : 'startMileage'">
+				<td><a href="#/mileages/{{ mileage._id }}">{{ mileage.trip.description }}</a></td>
+				<td>{{ mileage.startMileage }}</td>
+				<td>{{ mileage.endMileage }}</td>
+				<td><button ng-click="deleteMileage( mileage._id )">✘</button></td>
+			</tr>
+		</tbody>
+	</table>
+</script>
+
+
+<script type="text/ng-template" id="/payment-methods.html">
+	<table class="table table-striped table-hover table-condensed">
+		<thead>
+			<caption><h3>Payment Methods</h3></caption>
+			<tr><th>Description</th><th>Type</th><th>Delete</th></tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="paymentMethod in paymentMethods | orderBy : 'description'">
+				<td><a href="#/paymentMethods/{{ paymentMethod._id }}">{{ paymentMethod.description }}</a></td>
+				<td>{{ paymentMethod.type }}</td>
+				<td><button ng-click="deletePaymentMethod( paymentMethod._id )">✘</button></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<div ng-show="error" class="alert alert-danger row">
+		<span>{{ error.message }}</span>
+	</div>
+
+	<form ng-submit="addPaymentMethod()" ng-show="isLoggedIn() && !isEditing" style="margin-top:30px;" autocomplete="on">
+		<h4>Add a new payment method</h4>
+
+		<div class="form-group">
+			<label for="type">Type</label>
+			<select class="form-control" ng-model="type" id="type">
+				<option value="cash" selected>Cash</option>
+				<option value="check">Check</option>
+				<option value="credit-card">Credit Card</option>
+				<option value="debit-card">Debit Card</option>
+				<option value="paypal">Paypal</option>
+				<option value="other">Other</option>
+			</select>
+		</div>
+		<div class="form-group">
+			<label for="description">Description</label>
+			<input type="text" class="form-control" ng-model="description" id="description" ng-required="true"></input>
+		</div>
+		<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Add</button>
+	</form>
+
+	<form ng-submit="updatePaymentMethod()" ng-show="isLoggedIn() && isEditing" style="margin-top:30px;" autocomplete="on">
+		<h4>Update payment method</h4>
+
+		<input type="hidden" value="{{ paymentMethod._id }}" ng-model="paymentMethod._id" />
+		<div class="form-group">
+			<label for="type">Type</label>
+			<select class="form-control" ng-model="paymentMethod.type" id="type">
+				<option value="cash">Cash</option>
+				<option value="check">Check</option>
+				<option value="credit-card">Credit Card</option>
+				<option value="debit-card">Debit Card</option>
+				<option value="paypal">Paypal</option>
+				<option value="other">Other</option>
+			</select>
+		</div>
+		<div class="form-group">
+			<label for="description">Description</label>
+			<input type="text" class="form-control" ng-model="paymentMethod.description" id="description" ng-required="true"></input>
+		</div>
+		<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Update</button>
+	</form>
+</script>
+
+
+<script type="text/ng-template" id="/trip-categories.html">
+	<table class="table table-striped table-hover table-condensed">
+		<thead>
+			<caption><h3>Trip Categories</h3></caption>
+			<tr><th>Description</th><th>Delete</th></tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="tripCategory in tripCategories | orderBy : 'description'">
+				<td><a href="#/trip-categories/{{ tripCategory._id }}">{{ tripCategory.description }}</a></td>
+				<td><button ng-click="deleteTripCategory( tripCategory._id )">✘</button></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<div ng-show="error" class="alert alert-danger row">
+		<span>{{ error.message }}</span>
+	</div>
+
+	<form ng-submit="addTripCategory()" ng-show="isLoggedIn() && !isEditing" style="margin-top:30px;" autocomplete="on">
+		<h4>Add a new trip category</h4>
+
+		<div class="form-group">
+			<label for="description">Description</label>
+			<input type="text" class="form-control" ng-model="description" id="description" ng-required="true"></input>
+		</div>
+		<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Add</button>
+	</form>
+
+	<form ng-submit="updateTripCategory()" ng-show="isLoggedIn() && isEditing" style="margin-top:30px;" autocomplete="on">
+		<h4>Update trip category</h4>
+
+		<input type="hidden" ng-model="tripCategory._id" />
+		<div class="form-group">
+			<label for="description">Description</label>
+			<input type="text" class="form-control" ng-model="tripCategory.description" id="description" ng-required="true"></input>
+		</div>
+		<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Update</button>
+	</form>
+</script>
+
+
+<script type="text/ng-template" id="/trip.html">
+	<div ng-show="error" class="alert alert-danger row">
+		<span>{{ error.message }}</span>
+	</div>
+
+	<form ng-submit="addTrip()" ng-show="isLoggedIn() && !isEditing" style="margin-top:30px;" autocomplete="on">
+		<h4>Add a new trip</h4>
+
+		<div class="form-group">
+			<label for="description">Description</label>
+			<input class="form-control" type="text" ng-model="description" id="description" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="category">Category</label>
+			<select class="form-control" ng-model="category" id="category" ng-options="cat.description for cat in allCategories track by cat._id"></select>
+		</div>
+	        <div class="row">
+			<div class="col-md-6">
+                        	<label for="startDate">Start Date</label>
+                        	<p class="input-group">
+                                	<input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="startDate" is-open="startPopup.opened" ng-required="true" />
+                                <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default" ng-click="openStartDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+                                </span>
+                        </p>
+                </div>
+        </div>
+        <div class="row">
+                <div class="col-md-6">
+                        <label for="endDate">Date</label>
+                        <p class="input-group">
+                                <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="endDate" is-open="endPopup.opened" ng-required="true" />
+                                <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default" ng-click="openEndDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+                                </span>
+                        </p>
+                </div>
+        </div>
+		<div class="form-group">
+			<label for="vehicle">Vehicle</label>
+			<select class="form-control" ng-model="vehicle" id="vehicle" ng-options="v.model for v in allVehicles track by v._id"></select>
+		</div>
+		<div class="form-group">
+			<label for="notes">Notes</label>
+			<textarea class="form-control" rows="4" ng-model="notes" id="notes"></textarea>
+		</div>
+		<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Add</button>
+	</form>
+
+	<form ng-submit="updateTrip()" ng-show="isLoggedIn() && isEditing" style="margin-top:30px;" autocomplete="on">
+		<h4>Update the trip</h4>
+
+		<input type="hidden" ng-model="trip._id" />
+		<div class="form-group">
+			<label for="description">Description</label>
+			<input class="form-control" type="text" ng-model="trip.description" id="description" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="category">Category</label>
+			<select class="form-control" ng-model="trip.category" id="category" ng-options="cat.description for cat in allCategories track by cat._id"></select>
+		</div>
+               <div class="row">
+                        <div class="col-md-6">
+                                <label for="startDate">Start Date</label>
+                                <p class="input-group">
+                                        <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="trip.startDate" is-open="startPopup.opened" ng-required="true" />
+                                <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default" ng-click="openStartDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+                                </span>
+                        </p>
+                </div>
+        </div>
+        <div class="row">
+                <div class="col-md-6">
+                        <label for="endDate">Date</label>
+                        <p class="input-group">
+                                <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="trip.endDate" is-open="endPopup.opened" ng-required="true" />
+                                <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default" ng-click="openEndDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+                                </span>
+                        </p>
+                </div>
+        </div>
+		<div class="form-group">
+			<label for="vehicle">Vehicle</label>
+			<select class="form-control" ng-model="trip.vehicle" id="vehicle" ng-options="v.model for v in allVehicles track by v._id"></select>
+		</div>
+		<div class="form-group">
+			<label for="notes">Notes</label>
+			<textarea class="form-control" rows="4" ng-model="trip.notes" id="notes"></textarea>
+		</div>
+		<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Update</button>
+	</form>
+</script>
+
+
+<script type="text/ng-template" id="/trips.html">
+	<button class="btn btn-primary" ng-click="goToAdd()">Add Trip</button>
+
+	<table class="table table-striped table-hover table-condensed">
+		<thead>
+			<caption><h3>Trips</h3></caption>
+			<tr><th>Description</th><th>Category</th><th>Start Date</th><th>End Date</th><th>Vehicle</th><th>Delete</th></tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="trip in trips | orderBy : 'startDate'">
+				<td><a href="#/trips/{{ trip._id }}">{{ trip.description }}</a></td>
+				<td>{{ trip.category.description }}</td>
+				<td>{{ trip.startDate | date : 'shortDate' }}</td>
+				<td>{{ trip.endDate | date : 'shortDate' }}</td>
+				<td>{{ displayVehicle( trip.vehicle ) }}</td>
+				<td><button ng-click="deleteTrip( trip._id )">✘</button></td>
+			</tr>
+		</tbody>
+	</table>
+</script>
+
+
+<script type="text/ng-template" id="/vehicle.html">
+	<div ng-show="error" class="alert alert-danger row">
+		<span>{{ error.message }}</span>
+	</div>
+
+	<form ng-submit="addVehicle()" ng-show="isLoggedIn() && !isEditing" style="margin-top:30px;" autocomplete="on">
+		<h4>Add a new vehicle</h4>
+
+		<div class="form-group">
+			<label for="year">Year</label>
+			<input class="form-control" type="number" ng-model="year" id="year" min=1950 maxlength="4" minlength="4" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="make">Make</label>
+			<input class="form-control" type="text" ng-model="make" id="make" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="model">Model</label>
+			<input class="form-control" type="text" ng-model="model" id="model" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="purchaseDate">Purchase Date</label>
+			<input class="form-control" type="date" ng-model="purchaseDate" id="purchaseDate" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="isActive">Is Active?</label>
+			<input class="form-control" type="checkbox" ng-model="isActive" id="isActive">
+		</div>
+		<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Add</button>
+	</form>
+
+	<form ng-submit="updateVehicle()" ng-show="isLoggedIn() && isEditing" style="margin-top:30px;" autocomplete="on">
+		<h4>Update the vehicle</h4>
+
+		<input type="hidden" ng-model="vehicle._id" />
+		<div class="form-group">
+			<label for="year">Year</label>
+			<input class="form-control" type="number" ng-model="vehicle.year" id="year" min=1950 maxlength="4" minlength="4" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="make">Make</label>
+			<input class="form-control" type="text" ng-model="vehicle.make" id="make" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="model">Model</label>
+			<input class="form-control" type="text" ng-model="vehicle.model" id="model" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="purchaseDate">Purchase Date</label>
+			<input class="form-control" type="date" ng-model="vehicle.purchaseDate" id="purchaseDate" ng-required="true">
+		</div>
+		<div class="form-group">
+			<label for="isActive">Is Active?</label>
+			<input class="form-control" type="checkbox" ng-model="vehicle.isActive" id="isActive">
+		</div>
+		<button type="submit" ng-disabled="isDisabled" ng-click="disableButton" class="btn btn-primary">Update</button>
+	</form>
+</script>
+
+
+<script type="text/ng-template" id="/vehicles.html">
+	<button class="btn btn-primary" ng-click="goToAdd()">Add Vehicle</button>
+
+	<table class="table table-striped table-hover table-condensed">
+		<thead>
+			<caption><h3>Vehicles</h3></caption>
+			<tr><th>Vehicle</th><th>Purchase Date</th><th>Active?</th><th>Delete</th></tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="vehicle in vehicles | orderBy : 'make'">
+				<td><a href="#/vehicles/{{ vehicle._id }}">{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</a></td>
+				<td>{{ vehicle.purchaseDate | date : 'shortDate' }}</td>
+				<td>{{ isActiveDisplay( vehicle.isActive) }}</td>
+				<td><button ng-click="deleteVehicle( vehicle._id )">✘</button></td>
+			</tr>
+		</tbody>
+	</table>
+</script>
+
+
+<script type="text/ng-template" id="/expense.html">
+<div ng-show="error" class="alert alert-danger row">
+	<span>{{ error.message }}</span>
+</div>
+
+<form ng-submit="addExpense()" ng-show="isLoggedIn() && !isEditing" style="margin-top:30px;" autocomplete="on">
+	<h4>Add a new expense</h4>
+
+   <div class="row">
+		<div class="col-md-6">
+			<label for="date">Date</label>
+			<p class="input-group">
+				<input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="date" is-open="popup.opened" ng-required="true" />
+				<span class="input-group-btn">
+					<button type="button" class="btn btn-default" ng-click="openDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+				</span>
+			</p>
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="vendor">Vendor</label>
+		<input class="form-control" type="text" ng-model="vendor" id="vendor" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="description">Description</label>
+		<input class="form-control" type="text" ng-model="description" id="description" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="category">Category</label>
+		<select class="form-control" ng-model="category" id="category" ng-options="cat.description for cat in allExpCats track by cat._id" ng-required="true"></select>
+	</div>
+	<div class="form-group">
+		<label for="amount">Amount</label>
+		<input class="form-control" type="number" step="0.01" ng-model="amount" id="amount" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="currency">Currency</label>
+		<select class="form-control" ng-model="currency" id="currency" ng-options="curr.abbreviation for curr in allCurrencies track by curr._id" ng-required="true"></select>
+	</div>
+	<div class="form-group">
+		<label for="paymentMethod">Payment Method</label>
+		<select class="form-control" ng-model="paymentMethod" id="paymentMethod" ng-options="pm.description for pm in allPayMeths track by pm._id"></select>
+	</div>
+	<div class="form-group">
+		<label for="reference">Reference</label>
+		<input class="form-control" type="text" ng-model="reference" id="reference">
+	</div>
+	<div class="form-group" ng-show="showTrip">
+		<label for="trip">Trip</label>
+		<select class="form-control" ng-model="trip" id="trip" ng-options="t.description for t in allTrips track by t._id"></select>
+	</div>
+	<div class="form-group" ng-show="showVehicle">
+		<label for="vehicle">Vehicle</label>
+		<select class="form-control" ng-model="vehicle" id="vehicle" ng-options="v.model for v in allVehicles track by v._id"></select>
+	</div>
+	<button ng-disabled="isDisabled" type="submit" class="btn btn-primary">Add</button>
+</form>
+
+
+<form ng-submit="updateExpense()" ng-show="isLoggedIn() && isEditing" style="margin-top:30px;" autocomplete="on">
+	<h4>Update the expense</h4>
+
+	<input type="hidden" ng-model="expense._id" />
+	<div class="row">
+		<div class="col-md-6">
+			<label for="date">Date</label>
+			<p class="input-group">
+				<input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="expense.date" is-open="popup.opened" ng-required="true" />
+				<span class="input-group-btn">
+					<button type="button" class="btn btn-default" ng-click="openDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+				</span>
+			</p>
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="vendor">Vendor</label>
+		<input class="form-control" type="text" ng-model="expense.vendor" id="vendor" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="description">Description</label>
+		<input class="form-control" type="text" ng-model="expense.description" id="description" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="category">Category</label>
+		<select class="form-control" ng-model="expense.category" id="category" ng-options="cat.description for cat in allExpCats track by cat._id" ng-required="true"></select>
+	</div>
+	<div class="form-group">
+		<label for="amount">Amount</label>
+		<input class="form-control" type="number" step="0.01" ng-model="expense.amount" id="amount" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="currency">Currency</label>
+		<select class="form-control" ng-model="expense.currency" id="currency" ng-options="curr.abbreviation for curr in allCurrencies track by curr._id" ng-required="true"></select>
+	</div>
+	<div class="form-group">
+		<label for="paymentMethod">Payment Method</label>
+		<select class="form-control" ng-model="expense.paymentMethod" id="paymentMethod" ng-options="pm.description for pm in allPayMeths track by pm._id"></select>
+	</div>
+	<div class="form-group">
+		<label for="reference">Reference</label>
+		<input class="form-control" type="text" ng-model="expense.reference" id="reference">
+	</div>
+	<div class="form-group" ng-show="showTrip">
+		<label for="trip">Trip</label>
+		<select class="form-control" ng-model="expense.trip" id="trip" ng-options="t.description for t in allTrips track by t._id"></select>
+	</div>
+	<div class="form-group" ng-show="showVehicle">
+		<label for="vehicle">Vehicle</label>
+		<select class="form-control" ng-model="expense.vehicle" id="vehicle" ng-options="v.model for v in allVehicles track by v._id"></select>
+	</div>
+	<button type="submit" ng-disabled="isDisabled' class="btn btn-primary">Update</button>
+</form>
+</script>
+
+
+<script type="text/ng-template" id="/expenses.html">
+<div class="row">
+	<div class="col-xs-4">
+		<button class="btn btn-primary" ng-click="goToAdd()">Add Expense</button>
+	</div>
+	<div class="col-xs-4">
+		<label for="search">Search:</label>
+		<input ng-model="q" id="search" class="form-control" placeholder="Filter text">
+	</div>
+	<div class="col-xs-4">
+		<label for="pageSize">Items per page:</label>
+		<input type="number" min="1" max="100" class="form-control" ng-model="pageSize">
+	</div>
+</div>
+
+<table class="table table-striped table-hover table-condensed">
+	<thead>
+		<caption><h3>Expenses - Page {{ currentPage }}</h3></caption>
+		<tr><th>Date</th><th>Vendor</th><th>Category</th><th>Amount</th><th>&nbsp;</th></tr>
+	</thead>
+	<tbody>
+		<tr dir-paginate="expense in expenses | filter : q | orderBy : '-date' | itemsPerPage : pageSize" current-page="currentPage">
+			<td>{{ expense.date | date : 'shortDate' }}</td>
+			<td><a href="#/expenses/{{ expense._id }}">{{ expense.vendor }}</a></td>
+			<td>{{ expense.category.description }}</td>
+			<td>{{ expense.amount | currency : expense.currency.symbol }}</td>
+			<td><button ng-click="deleteExpense( expense._id )">✘</button><button type="button" ng-click="copyExpense( expense )"><i class="glyphicon glyphicon-duplicate"></i></button></td>
+		</tr>
+	</tbody>
+</table>
+<div class="text-center">
+	<dir-pagination-controls boundary-links="true" on-page-change="pageChangeHandler(newPageNumber)" template-url="dirPagination.tpl.html"></dir-agination-controls>
+</div>
+</script>
+	</body>
+</html>

@@ -1,0 +1,92 @@
+<div ng-show="error" class="alert alert-danger row">
+	<span>{{ error.message }}</span>
+</div>
+
+<form ng-submit="addTrip()" ng-show="isLoggedIn() && !isEditing" style="margin-top:30px;">
+	<h4>Add a new trip</h4>
+
+	<div class="form-group">
+		<label for="description">Description</label>
+		<input class="form-control" type="text" ng-model="description" id="description" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="category">Category</label>
+		<select class="form-control" ng-model="category" id="category" ng-options="cat.description for cat in allCategories track by cat._id"></select>
+	</div>
+   <div class="row">
+		<div class="col-md-6">
+			<label for="startDate">Start Date</label>
+			<p class="input-group">
+				<input type="text" class="form-control" id="startDate" uib-datepicker-popup="{{format}}" ng-model="startDate" is-open="popupStartDate.opened" ng-required="true" />
+				<span class="input-group-btn">
+					<button type="button" class="btn btn-default" ng-click="openStartDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+				</span>
+			</p>
+		</div>
+	</div>
+   <div class="row">
+		<div class="col-md-6">
+			<label for="endDate">End Date</label>
+			<p class="input-group">
+				<input type="text" class="form-control" id="endDate" uib-datepicker-popup="{{format}}" ng-model="endDate" is-open="popupEndDate.opened" />
+				<span class="input-group-btn">
+					<button type="button" class="btn btn-default" ng-click="openEndDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+				</span>
+			</p>
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="vehicle">Vehicle</label>
+		<select class="form-control" ng-model="vehicle" id="vehicle" ng-options="v.model for v in allVehicles track by v._id"></select>
+	</div>
+	<div class="form-group">
+		<label for="notes">Notes</label>
+		<textarea class="form-control" rows="4" ng-model="notes" id="notes"></textarea>
+	</div>
+	<button type="submit" class="btn btn-primary">Add</button>
+</form>
+
+<form ng-submit="updateTrip()" ng-show="isLoggedIn() && isEditing" style="margin-top:30px;">
+	<h4>Update the trip</h4>
+
+	<input type="hidden" ng-model="trip._id" />
+	<div class="form-group">
+		<label for="description">Description</label>
+		<input class="form-control" type="text" ng-model="trip.description" id="description" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="category">Category</label>
+		<select class="form-control" ng-model="trip.category" id="category" ng-options="cat.description for cat in allCategories track by cat._id"></select>
+	</div>
+   <div class="row">
+		<div class="col-md-6">
+			<label for="startDate">Start Date</label>
+			<p class="input-group">
+				<input type="text" class="form-control" id="startDate" uib-datepicker-popup="{{format}}" ng-model="trip.startDate" is-open="popupStartDate.opened" ng-required="true" />
+				<span class="input-group-btn">
+					<button type="button" class="btn btn-default" ng-click="openStartDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+				</span>
+			</p>
+		</div>
+	</div>
+   <div class="row">
+		<div class="col-md-6">
+			<label for="endDate">End Date</label>
+			<p class="input-group">
+				<input type="text" class="form-control" id="endDate" uib-datepicker-popup="{{format}}" ng-model="trip.endDate" is-open="popupEndDate.opened" />
+				<span class="input-group-btn">
+					<button type="button" class="btn btn-default" ng-click="openEndDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+				</span>
+			</p>
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="vehicle">Vehicle</label>
+		<select class="form-control" ng-model="trip.vehicle" id="vehicle" ng-options="v.model for v in allVehicles track by v._id"></select>
+	</div>
+	<div class="form-group">
+		<label for="notes">Notes</label>
+		<textarea class="form-control" rows="4" ng-model="trip.notes" id="notes"></textarea>
+	</div>
+	<button type="submit" class="btn btn-primary">Update</button>
+</form>

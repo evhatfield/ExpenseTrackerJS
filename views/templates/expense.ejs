@@ -1,0 +1,110 @@
+<div ng-show="error" class="alert alert-danger row">
+	<span>{{ error.message }}</span>
+</div>
+
+<form ng-submit="addExpense()" ng-show="isLoggedIn() && !isEditing" style="margin-top:30px;">
+	<h4>Add a new expense</h4>
+
+   <div class="row">
+		<div class="col-md-6">
+			<label for="date">Date</label>
+			<p class="input-group">
+				<input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="date" is-open="popup.opened" ng-required="true" />
+				<span class="input-group-btn">
+					<button type="button" class="btn btn-default" ng-click="openDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+				</span>
+			</p>
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="vendor">Vendor</label>
+		<input class="form-control" type="text" ng-model="vendor" id="vendor" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="description">Description</label>
+		<input class="form-control" type="text" ng-model="description" id="description" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="category">Category</label>
+		<select class="form-control" ng-model="category" id="category" ng-options="cat.description for cat in allExpCats track by cat._id" ng-required="true"></select>
+	</div>
+	<div class="form-group">
+		<label for="amount">Amount</label>
+		<input class="form-control" type="number" step="0.01" ng-model="amount" id="amount" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="currency">Currency</label>
+		<select class="form-control" ng-model="currency" id="currency" ng-options="curr.abbreviation for curr in allCurrencies track by curr._id" ng-required="true"></select>
+	</div>
+	<div class="form-group">
+		<label for="paymentMethod">Payment Method</label>
+		<select class="form-control" ng-model="paymentMethod" id="paymentMethod" ng-options="pm.description for pm in allPayMeths track by pm._id"></select>
+	</div>
+	<div class="form-group">
+		<label for="reference">Reference</label>
+		<input class="form-control" type="text" ng-model="reference" id="reference">
+	</div>
+	<div class="form-group">
+		<label for="trip">Trip</label>
+		<select class="form-control" ng-model="trip" id="trip" ng-options="t.description for t in allTrips track by t._id"></select>
+	</div>
+	<div class="form-group">
+		<label for="vehicle">Vehicle</label>
+		<select class="form-control" ng-model="vehicle" id="vehicle" ng-options="v.model for v in allVehicles track by v._id"></select>
+	</div>
+	<button type="submit" class="btn btn-primary">Add</button>
+</form>
+
+<form ng-submit="updateExpense()" ng-show="isLoggedIn() && isEditing" style="margin-top:30px;">
+	<h4>Update the expense</h4>
+
+	<input type="hidden" ng-model="expense._id" />
+   <div class="row">
+		<div class="col-md-6">
+			<label for="date">Date</label>
+			<p class="input-group">
+				<input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="expense.date" is-open="popup.opened" ng-required="true" />
+				<span class="input-group-btn">
+					<button type="button" class="btn btn-default" ng-click="openDate()"><i class="glyphicon glyphicon-calendar"></i></button>
+				</span>
+			</p>
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="vendor">Vendor</label>
+		<input class="form-control" type="text" ng-model="expense.vendor" id="vendor" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="description">Description</label>
+		<input class="form-control" type="text" ng-model="expense.description" id="description" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="category">Category</label>
+		<select class="form-control" ng-model="expense.category" id="category" ng-options="cat.description for cat in allExpCats track by cat._id" ng-required="true"></select>
+	</div>
+	<div class="form-group">
+		<label for="amount">Amount</label>
+		<input class="form-control" type="number" step="0.01" ng-model="expense.amount" id="amount" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="currency">Currency</label>
+		<select class="form-control" ng-model="expense.currency" id="currency" ng-options="curr.abbreviation for curr in allCurrencies track by curr._id" ng-required="true"></select>
+	</div>
+	<div class="form-group">
+		<label for="paymentMethod">Payment Method</label>
+		<select class="form-control" ng-model="expense.paymentMethod" id="paymentMethod" ng-options="pm.description for pm in allPayMeths track by pm._id"></select>
+	</div>
+	<div class="form-group">
+		<label for="reference">Reference</label>
+		<input class="form-control" type="text" ng-model="expense.reference" id="reference">
+	</div>
+	<div class="form-group">
+		<label for="trip">Trip</label>
+		<select class="form-control" ng-model="expense.trip" id="trip" ng-options="t.description for t in allTrips track by t._id"></select>
+	</div>
+	<div class="form-group">
+		<label for="vehicle">Vehicle</label>
+		<select class="form-control" ng-model="expense.vehicle" id="vehicle" ng-options="v.model for v in allVehicles track by v._id"></select>
+	</div>
+	<button type="submit" class="btn btn-primary">Update</button>
+</form>

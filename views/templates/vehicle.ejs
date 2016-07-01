@@ -1,0 +1,56 @@
+<div ng-show="error" class="alert alert-danger row">
+	<span>{{ error.message }}</span>
+</div>
+
+<form ng-submit="addVehicle()" ng-show="isLoggedIn() && !isEditing" style="margin-top:30px;">
+	<h4>Add a new vehicle</h4>
+
+	<div class="form-group">
+		<label for="year">Year</label>
+		<input class="form-control" type="number" ng-model="year" id="year" min=1950 maxlength="4" minlength="4" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="make">Make</label>
+		<input class="form-control" type="text" ng-model="make" id="make" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="model">Model</label>
+		<input class="form-control" type="text" ng-model="model" id="model" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="purchaseDate">Purchase Date</label>
+		<input class="form-control" type="date" ng-model="purchaseDate" id="purchaseDate" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="isActive">Is Active?</label>
+		<input class="form-control" type="checkbox" ng-model="isActive" id="isActive">
+	</div>
+	<button type="submit" class="btn btn-primary">Add</button>
+</form>
+
+<form ng-submit="updateVehicle()" ng-show="isLoggedIn() && isEditing" style="margin-top:30px;">
+	<h4>Update the vehicle</h4>
+
+	<input type="hidden" ng-model="vehicle._id" />
+	<div class="form-group">
+		<label for="year">Year</label>
+		<input class="form-control" type="number" ng-model="vehicle.year" id="year" min=1950 maxlength="4" minlength="4" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="make">Make</label>
+		<input class="form-control" type="text" ng-model="vehicle.make" id="make" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="model">Model</label>
+		<input class="form-control" type="text" ng-model="vehicle.model" id="model" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="purchaseDate">Purchase Date</label>
+		<input class="form-control" type="date" ng-model="vehicle.purchaseDate" id="purchaseDate" ng-required="true">
+	</div>
+	<div class="form-group">
+		<label for="isActive">Is Active?</label>
+		<input class="form-control" type="checkbox" ng-model="vehicle.isActive" id="isActive">
+	</div>
+	<button type="submit" class="btn btn-primary">Update</button>
+</form>
